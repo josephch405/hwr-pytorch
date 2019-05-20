@@ -1,0 +1,4 @@
+['remote "gcloud"']
+url = gs://quiklogs-dvc
+[core]
+remote = gcloud
