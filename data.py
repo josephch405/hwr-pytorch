@@ -2,10 +2,9 @@ import os
 
 import numpy as np
 import torch
-from skimage import io, transform
-from torch.utils.data import Dataset
-from torchvision.transforms.functional import resize, pad
 from PIL import Image
+from torch.utils.data import Dataset
+from torchvision.transforms.functional import pad, resize, to_tensor
 
 from process_csv import readCsv
 
@@ -55,7 +54,7 @@ class HWRSegmentationDataset(Dataset):
 
 
 class MakeSquareAndTargets(object):
-    def __init__(self, output_dim=1024, grid_dim=32):
+    def __init__(self, output_dim=512, grid_dim=32):
         self.output_dim = output_dim
         self.grid_dim = grid_dim
 
@@ -87,8 +86,8 @@ class MakeSquareAndTargets(object):
         boxes = np.array(boxes)
         boxes[:, 0] = boxes[:, 0] * resize_ratio + padding[1]
         boxes[:, 1] = boxes[:, 1] * resize_ratio + padding[0]
-        boxes[:, 2] = boxes[:, 0] * resize_ratio
-        boxes[:, 3] = boxes[:, 0] * resize_ratio
+        boxes[:, 2] = boxes[:, 2] * resize_ratio
+        boxes[:, 3] = boxes[:, 3] * resize_ratio
 
         # convert to targets of [offset_x, offset_y, w, h, confidence]
         # target is [height x width]
@@ -104,7 +103,8 @@ class MakeSquareAndTargets(object):
             target_w = w / self.output_dim
             target_h = h / self.output_dim
             target[j][i] = [offset_x, offset_y, target_w, target_h, 1]
+        target = np.moveaxis(target, 2, 0)
         return {
-            "image": image,
+            "image": to_tensor(image),
             "target": target
         }
