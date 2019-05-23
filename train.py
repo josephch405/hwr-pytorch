@@ -33,13 +33,17 @@ val_loader = DataLoader(dataset, batch_size=8,
 
 MAX_EPOCHS = 20
 
-net = model.GreyNet().cuda()
+net = model.GreyNet()  # .cuda()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
 def weighted_loss(pred, target):
+    # loss is scaled to .1 for "falsy" grid squares and 100 for "truthy"
     mask = (target[:, 4] == 0)[:, None].float() * .1
-    mask += (target[:, 4] > 0)[:, None].float() * 100
+    mask += (target[:, 4] > 0)[:, None].float() * 10
+
+    loss = nn.functional.soft_margin_loss
+
     loss = nn.functional.mse_loss(pred, target, reduction='none')
 
     loss *= mask
@@ -50,8 +54,8 @@ for epoch in range(MAX_EPOCHS):
     running_loss = 0.0
     print(f"epoch {epoch}")
     for i_batch, sample_batched in enumerate(train_loader):
-        image = sample_batched['image'].cuda()
-        target = sample_batched['target'].cuda().float()
+        image = sample_batched['image']  # .cuda()
+        target = sample_batched['target'].float()  # .cuda().float()
         optimizer.zero_grad()
 
         preds = net(image)

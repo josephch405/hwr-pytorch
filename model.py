@@ -40,6 +40,14 @@ class GreyNet(torch.nn.Module):
         y = y.view(y.shape[0], -1)
         y = self.fc(y)
         # [ 32 * 32 * 5 ]
+
         # TODO: make parameterized
         y = y.view(y.shape[0], 5, 32, 32)
+
+        y_offsets = torch.tanh(y[:, 0:2])
+        y_sizes = torch.sigmoid(y[:, 2:4])
+        y_valid = torch.tanh(y[:, 4:5])
+
+        y = torch.cat([y_offsets, y_sizes, y_valid], dim=1)
+
         return y
