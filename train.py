@@ -9,7 +9,8 @@ import data
 import model
 
 transforms = data.MakeSquareAndTargets()
-dataset = data.HWRSegmentationDataset("data/csv", "data/forms", transforms)
+dataset = data.HWRSegmentationDataset(
+    "data/csv/forms", "data/forms", transforms)
 
 batch_size = 8
 validation_split = .2

@@ -1,0 +1,8 @@
+wdir: ..
+outs:
+- path: data/lines
+  metric: false
+  cache: true
+  persist: false
+  md5: e26e5b4d8cd3da0d251078f9cee1fb01.dir
+md5: 89de65863a5df3eb2346081dcaaec940

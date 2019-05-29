@@ -1,0 +1,8 @@
+wdir: ..
+outs:
+- path: data/forms
+  metric: false
+  cache: true
+  persist: false
+  md5: 897874c5c16586970a27df9b7f305945.dir
+md5: 95adf960923209452e4482a842ebc768

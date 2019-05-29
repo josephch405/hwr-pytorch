@@ -1,0 +1,19 @@
+md5: 79341f8f8163216360af45b7aec24477
+cmd: python process_csv.py
+wdir: .
+deps:
+- md5: 9993442a5d30fc6697469734c41bd01f
+  path: process_csv.py
+- md5: 6d0d4d44cb3946096e70df5d8dd33caf.dir
+  path: data/xml
+outs:
+- md5: 8665bdee72044c6ba57f896e5ba5c9b9.dir
+  path: data/csv/forms
+  cache: true
+  metric: false
+  persist: false
+- md5: 5be416338db97bf1f9e6f4ce959da378
+  path: data/csv/lines.csv
+  cache: true
+  metric: false
+  persist: false

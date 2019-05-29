@@ -2,9 +2,10 @@ import xml.etree.ElementTree as ET
 import csv
 import os
 
+# FORM PROCESSING
 
-def processXmlRoot(t):
 
+def processFormXml(t):
     docDims = [int(t.attrib["height"]), int(t.attrib["width"])]
 
     results = []
@@ -28,7 +29,7 @@ def processXmlRoot(t):
     return results
 
 
-def writeCsv(lists, path):
+def writeFormCsv(lists, path):
     if not os.path.exists(os.path.dirname(path)):
         try:
             os.makedirs(os.path.dirname(path))
@@ -41,7 +42,7 @@ def writeCsv(lists, path):
             writer.writerow(l)
 
 
-def readCsv(path):
+def readFormCsv(path):
     with open(path) as csv_file:
         reader = csv.reader(csv_file)
         results = []
@@ -50,12 +51,50 @@ def readCsv(path):
             results.append(new_row)
         return results
 
+# LINE PROCESSING
+
+
+def processLineXml(t):
+    # t: xml root
+    # returns: [[line_id_1, line_content_1], ...]
+    results = []
+
+    for line in t[1]:
+        results.append([line.attrib["id"], line.attrib["text"]])
+    return results
+
+
+def writeLineCsv(lists, path):
+    if not os.path.exists(os.path.dirname(path)):
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError as exc:  # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    with open(path, mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        for l in lists:
+            writer.writerow(l)
+
+
+def readLineCsv(path):
+    with open(path) as csv_file:
+        reader = csv.reader(csv_file)
+        results = []
+        for row in reader:
+            results.append(row)
+        return results
+
 
 if __name__ == "__main__":
     filenames = os.listdir("data/xml")
+    lines = []
 
     for filename in filenames:
         t = ET.parse(f"data/xml/{filename}").getroot()
-        print(filename)
         csv_filename = filename.replace(".xml", ".csv")
-        writeCsv(processXmlRoot(t), f"data/csv/{csv_filename}")
+        writeFormCsv(processFormXml(t), f"data/csv/forms/{csv_filename}")
+
+        lines += processLineXml(t)
+
+    writeLineCsv(lines, "data/csv/lines.csv")

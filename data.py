@@ -6,7 +6,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import pad, resize, to_tensor
 
-from process_csv import readCsv
+from process_csv import readFormCsv, readLineCsv
 
 
 def data_path(n):
@@ -19,7 +19,7 @@ class HWRSegmentationDataset(Dataset):
     def __init__(self, csv_dir, form_dir, transform=None):
         """
         Args:
-            csv_dir (string): Path to data/csv folder
+            csv_dir (string): Path to data/csv/forms folder
             form_dir (string): Path to data/forms folder
             transform (callable?): Optional transform on data
         """
@@ -34,7 +34,7 @@ class HWRSegmentationDataset(Dataset):
     def __getitem__(self, idx):
         csv_filename = self.csv_list[idx]
         csv_path = os.path.join(self.csv_dir, csv_filename)
-        boxes = readCsv(csv_path)
+        boxes = readFormCsv(csv_path)
 
         img_filename = csv_filename.replace(".csv", ".png")
         img_path = os.path.join(self.form_dir, img_filename)
@@ -114,3 +114,52 @@ class MakeSquareAndTargets(object):
             "image": to_tensor(image),
             "target": target
         }
+
+
+class HWRLinesDataset(Dataset):
+    """Dataset for all line images with golden texts"""
+
+    def __init__(self, csv_file, line_dir, out_height=64, transform=None):
+        """
+        Args:
+            csv_file (string): Path to data/csv/lines.csv
+            line_dir (string): Path to data/lines folder
+            transform (callable?): Optional transform on data
+        """
+        self.csv_file = csv_file
+        self.line_list = readLineCsv(csv_file)
+        self.line_dir = line_dir
+        self.transform = transform
+        self.out_height = out_height
+
+    def __len__(self):
+        return len(self.line_list)
+
+    def __getitem__(self, idx):
+        line_id, line_text = self.line_list[idx]
+
+        line_id_parts = line_id.split("-")
+
+        # Paths are /data/lines/a01/a01-000u/a01-00u-00.png as an example
+        img_path = os.path.join(
+            self.line_dir, line_id_parts[0],
+            line_id_parts[0] + "-" + line_id_parts[1],
+            line_id + ".png")
+
+        img = Image.open(img_path).convert("L")
+
+        old_w, old_h = img.size[0], img.size[1]
+        new_h = self.out_height
+        new_w = int(self.out_height * old_w / old_h)
+
+        img = resize(img, (new_h, new_w))
+
+        result = {
+            'image': to_tensor(img),
+            'text': line_text
+        }
+
+        if self.transform:
+            result = self.transform(result)
+
+        return result
